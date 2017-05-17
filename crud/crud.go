@@ -35,7 +35,7 @@ func createPage(res http.ResponseWriter, req *http.Request) {
 	res.Write([]byte("User created!"))
 }
 
-func createPage(res http.ResponseWriter, req *http.Request) {
+func updatePage(res http.ResponseWriter, req *http.Request) {
 	if req.Method != "POST" {
 		http.ServeFile(res, req, "list.html")
 		return
@@ -43,14 +43,10 @@ func createPage(res http.ResponseWriter, req *http.Request) {
 }
 
 func listPage(res http.ResponseWriter, req *http.Request) {
-	users := []User{
-		{"Test 1", "test1@test.com"},
-		{"Test 2", "test2@test.com"},
-		{"Test 3", "test3@test.com"},
-	}
 	tmpl := template.Must(template.ParseFiles("list.html"))
-	http.ServeFile(res, req, "list.html")
-	rows, err := db.Query("SELECT * FROM users")
+	rows, err := db.Query("SELECT name, email FROM users")
+	i := 0
+	users := make([]User, 3)
 	for rows.Next() {
 		var name string
 		var email string
@@ -59,12 +55,14 @@ func listPage(res http.ResponseWriter, req *http.Request) {
 			http.Error(res, "Server error, unable to create your account.", 500)
 			return
 		}
+		users[i] = User{Name: name, Email: email}
+		i++
 	}
 	tmpl.Execute(res, struct{ Users []User }{users})
 }
 
 func main() {
-	db, err = sql.Open("mysql", "username:password@tcp(host)/dbname")
+	db, err = sql.Open("mysql", "root:@tcp(localhost:3306)/test")
 	if err != nil {
 		panic(err.Error())
 	}
