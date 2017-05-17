@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Create Page</title>
+</head>
+<body>
+    <h1>Create</h1>
+    <form method="POST" action="/update/?id={{.Id}}">
+        <input type="text" name="name" value="{{.Name}}">
+        <input type="text" name="email" value="{{.Email}}">
+        <input type="submit" value="Submit">
+    </form>
+</body>
+</html>

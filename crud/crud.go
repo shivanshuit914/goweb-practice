@@ -38,10 +38,36 @@ func createPage(res http.ResponseWriter, req *http.Request) {
 
 func updatePage(res http.ResponseWriter, req *http.Request) {
 	if req.Method != "POST" {
-		// id := req.FormValue("id")
-		http.ServeFile(res, req, "create.html")
+		tmpl := template.Must(template.ParseFiles("update.html"))
+		user := User{}
+		id := req.URL.Query().Get("id")
+		var dbname, dbemail string
+		var dbid int
+		err := db.QueryRow("SELECT id, name, email FROM users where id = ?", id).Scan(&dbid, &dbname, &dbemail)
+		if err != nil {
+			http.Error(res, "Server error, unable to delete your account.", 500)
+			return
+		}
+
+		user = User{Id: dbid, Name: dbname, Email: dbemail}
+		tmpl.Execute(res, user)
+
 		return
 	}
+
+	name := req.FormValue("name")
+	email := req.FormValue("email")
+	id := req.FormValue("id")
+
+	_, err = db.Exec("UPDATE users set name = ?, email = ? WHERE id = ?", name, email, id)
+
+	if err != nil {
+		http.Error(res, "Server error, unable to create your account."+name, 500)
+		return
+	}
+
+	res.Write([]byte("User updated!"))
+
 }
 
 func deletePage(res http.ResponseWriter, req *http.Request) {
@@ -53,7 +79,7 @@ func deletePage(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, "Server error, unable to delete your account.", 500)
 		return
 	}
-	res.Write([]byte("User deleted!" + id))
+	res.Write([]byte("User deleted!"))
 }
 
 func listPage(res http.ResponseWriter, req *http.Request) {
@@ -89,7 +115,7 @@ func main() {
 
 	http.HandleFunc("/create", createPage)
 	http.HandleFunc("/list", listPage)
-	http.HandleFunc("/update", updatePage)
+	http.HandleFunc("/update/", updatePage)
 	http.HandleFunc("/delete/", deletePage)
 	http.ListenAndServe(":8080", nil)
 }

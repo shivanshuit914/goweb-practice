@@ -8,8 +8,10 @@
   <h1>Users List</h1>
   <ul>
     {{range .Users}}
-      <a href="/update/?id={{.Id}}" >Edit</a><li>{{.Name}} | {{.Email}}</li>
+      <li>{{.Name}} | {{.Email}} | <a href="/update/?id={{.Id}}" >Edit</a> | <a href="/delete/?id={{.Id}}" >Delete</a></li>
     {{end}}
   </ul>
+  <br/>
+  <a href="create"> Create</a>
 </body>
 </html>
