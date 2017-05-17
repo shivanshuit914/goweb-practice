@@ -45,8 +45,7 @@ func updatePage(res http.ResponseWriter, req *http.Request) {
 func listPage(res http.ResponseWriter, req *http.Request) {
 	tmpl := template.Must(template.ParseFiles("list.html"))
 	rows, err := db.Query("SELECT name, email FROM users")
-	i := 0
-	users := make([]User, 3)
+	users := []User{}
 	for rows.Next() {
 		var name string
 		var email string
@@ -55,8 +54,7 @@ func listPage(res http.ResponseWriter, req *http.Request) {
 			http.Error(res, "Server error, unable to create your account.", 500)
 			return
 		}
-		users[i] = User{Name: name, Email: email}
-		i++
+		users = append(users, User{Name: name, Email: email})
 	}
 	tmpl.Execute(res, struct{ Users []User }{users})
 }
