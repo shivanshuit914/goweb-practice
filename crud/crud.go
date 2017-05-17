@@ -12,6 +12,7 @@ var db *sql.DB
 var err error
 
 type User struct {
+	Id    int
 	Name  string
 	Email string
 }
@@ -37,24 +38,39 @@ func createPage(res http.ResponseWriter, req *http.Request) {
 
 func updatePage(res http.ResponseWriter, req *http.Request) {
 	if req.Method != "POST" {
-		http.ServeFile(res, req, "list.html")
+		// id := req.FormValue("id")
+		http.ServeFile(res, req, "create.html")
 		return
 	}
 }
 
+func deletePage(res http.ResponseWriter, req *http.Request) {
+	id := req.URL.Query().Get("id")
+
+	_, err = db.Exec("DELETE FROM users WHERE id = ?", id)
+
+	if err != nil {
+		http.Error(res, "Server error, unable to delete your account.", 500)
+		return
+	}
+	res.Write([]byte("User deleted!" + id))
+}
+
 func listPage(res http.ResponseWriter, req *http.Request) {
 	tmpl := template.Must(template.ParseFiles("list.html"))
-	rows, err := db.Query("SELECT name, email FROM users")
+	rows, err := db.Query("SELECT id, name, email FROM users")
 	users := []User{}
 	for rows.Next() {
+		var id int
 		var name string
 		var email string
-		err = rows.Scan(&name, &email)
+
+		err = rows.Scan(&id, &name, &email)
 		if err != nil {
-			http.Error(res, "Server error, unable to create your account.", 500)
+			http.Error(res, "Server error, unable to list accounts.", 500)
 			return
 		}
-		users = append(users, User{Name: name, Email: email})
+		users = append(users, User{Id: id, Name: name, Email: email})
 	}
 	tmpl.Execute(res, struct{ Users []User }{users})
 }
@@ -74,5 +90,6 @@ func main() {
 	http.HandleFunc("/create", createPage)
 	http.HandleFunc("/list", listPage)
 	http.HandleFunc("/update", updatePage)
+	http.HandleFunc("/delete/", deletePage)
 	http.ListenAndServe(":8080", nil)
 }
