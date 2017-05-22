@@ -23,6 +23,7 @@ type Address struct {
 var people []User
 
 func GetUserEndpoint(w http.ResponseWriter, req *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 	params := mux.Vars(req)
 	for _, item := range people {
 		if item.ID == params["id"] {
@@ -34,12 +35,14 @@ func GetUserEndpoint(w http.ResponseWriter, req *http.Request) {
 }
 
 func GetPeopleEndpoint(w http.ResponseWriter, req *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(people)
 }
 
 func CreateUserEndpoint(w http.ResponseWriter, req *http.Request) {
 	params := mux.Vars(req)
 	var person User
+	w.Header().Set("Content-Type", "application/json")
 	_ = json.NewDecoder(req.Body).Decode(&person)
 	person.ID = params["id"]
 	people = append(people, person)
@@ -56,6 +59,7 @@ func UpdateUserEndpoint(w http.ResponseWriter, req *http.Request) {
 			address.City = params["city"]
 			address.State = params["state"]
 			item.Address = address
+			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(item)
 			return
 		}
@@ -70,6 +74,7 @@ func DeleteUserEndpoint(w http.ResponseWriter, req *http.Request) {
 			break
 		}
 	}
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(people)
 }
 
